@@ -1,27 +1,38 @@
-const Ticket = require("../models/Ticket");
+const Ticket = require('../models/Ticket');
 
-// @desc    Create a new ticket
-// @route   POST /api/tickets
-async function createTicket(res, req) {
+/**
+ * @desc    Create a new ticket
+ * @route   POST /api/tickets
+ * @access  Private
+ */
+exports.createTicket = async (req, res) => {
+  // Ensure title and description are present in the request body
   const { title, description } = req.body;
+  if (!title || !description) {
+    return res.status(400).json({ msg: 'Please provide a title and description' });
+  }
+
   try {
     const ticket = await Ticket.create({
       title,
       description,
-      user: req.user.id, 
-      status: "New", 
+      user: req.user.id, // Comes from the protect middleware
+      status: 'New',     // Default status
     });
 
     res.status(201).json(ticket);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ msg: "Server Error" });
+    res.status(500).json({ msg: 'Server Error' });
   }
-}
+};
 
-// @desc    Get tickets for the logged-in user
-// @route   GET /api/tickets
-async function getMyTickets = async (req, res) => {
+/**
+ * @desc    Get tickets for the logged-in user
+ * @route   GET /api/tickets
+ * @access  Private
+ */
+exports.getMyTickets = async (req, res) => {
   try {
     // Find tickets where the 'user' field matches the logged-in user's ID
     const tickets = await Ticket.find({ user: req.user.id });
@@ -31,9 +42,4 @@ async function getMyTickets = async (req, res) => {
     console.error(error);
     res.status(500).json({ msg: 'Server Error' });
   }
-};
-
-module.exports = {
-  createTicket,
-  getMyTickets
 };
